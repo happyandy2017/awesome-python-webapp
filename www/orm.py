@@ -43,11 +43,11 @@ async def select(sql, args, size=None):
 #实现insert\update\delete语句，默认打开自动提交事务
 async def execute(sql, args, autocommit=True):
     log(sql)
-    with await __pool.get() as conn:  #获取一个连接
+    async with __pool.get() as conn:  #获取一个连接
         if not autocommit:
             await conn.begin()  #协程开始启动
         try:
-            async with conn.cursor() as cur:  #创建一个游标，返回字典类型
+            async with conn.cursor(aiomysql.DictCursor) as cur:  #创建一个游标，返回字典类型
                 await cur.execute(sql.replace('?', '%s'), args) #执行SQL
                 affected = cur.rowcount #获得影响的行数
             
